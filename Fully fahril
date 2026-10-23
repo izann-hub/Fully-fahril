@@ -1,11 +1,8 @@
 -- ============================================================
 -- 🚀 FULLY MS V1 — MTS MASYARIKUL ANWAR EDITION
--- Display: FAHRIL
--- Background: rbxassetid://86196334070679
--- NoClip: FIXED (Permanent + Anti-Balik + Auto Re-attach)
--- Tween Speed: 24
--- WalkSpeed: 21
 -- ============================================================
+
+JENOWA STORE 🪙
 
 -- ============================================================
 -- 🔥 AUTO CLICK PLAY
@@ -1137,9 +1134,12 @@ _G.StopFullyFarm = StopFullyFarm
 _G.EnableNoClip = EnableNoClipPermanent
 _G.DisableNoClip = DisableNoClipPermanent
 
+-- ============================================================
+-- 🔄 AUTO REJOIN
+-- ============================================================
 local AutoRejoinConfig = {
     Enabled = true,
-    ScriptUrl = "https://pastefy.app/82E6hkS0/raw",
+    ScriptUrl = "https://raw.githubusercontent.com/izann-hub/Fully-fahril/refs/heads/main/Fully%20fahril",
     GameId = 10179538382,
 }
 local IsDeathTeleport = false
@@ -1737,10 +1737,6 @@ end)
 print("========================================")
 print("🎀 MTS MASYARIKUL ANWAR UI — LOADED")
 print("👤 Display Name: FAHRIL")
-print("🖼️ Background: rbxassetid://86196334070679")
-print("🚪 NoClip: FIXED")
-print("🏃 Tween Speed: 24")
-print("🚶 WalkSpeed: 21")
 print("========================================")
 print("📌 F3 = Toggle UI")
 print("🎨 Warna: Pink · Abu-abu · Biru · Merah")
