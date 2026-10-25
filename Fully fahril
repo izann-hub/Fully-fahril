@@ -1,14 +1,14 @@
 -- ============================================================
--- 🚀 FULLY MS V1 — MTS MASYARIKUL ANWAR EDITION (FIX UI)
+-- 🚀 FULLY MS V1 — MTS MASYARIKUL ANWAR EDITION (FINAL)
+-- Script URL: https://raw.githubusercontent.com/izann-hub/Fully-fahril/refs/heads/main/Fully%20fahril
 -- ============================================================
-print("JENOWA STORE") 
+
 print("🚀 [LOADER] Script mulai...")
 
 -- ============================================================
 -- 🔥 SEMUA LOGIKA FARM DIBUNGKUS pcall
--- (kalau ada error, UI tetap dibuat)
 -- ============================================================
-local FarmLogicOK = pcall(function()
+local FarmLogicOK, FarmLogicErr = pcall(function()
 
 print("🔧 [LOADER] Bagian farm dimulai...")
 
@@ -64,7 +64,7 @@ while attempts < maxAttempts do
 end
 
 -- ============================================================
--- 🔥 HYPHON EMULATOR (dibungkus pcall agar tidak crash)
+-- 🔥 HYPHON EMULATOR (dibungkus pcall)
 -- ============================================================
 pcall(function()
     if not filtergc then
@@ -203,7 +203,7 @@ local Player = LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui", 30)
 if not PlayerGui then error("PlayerGui tidak ditemukan!") end
 
-local RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvents", 30) 
+local RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvents", 30)
 if RemoteEvent then RemoteEvent = RemoteEvent:WaitForChild("ReliableRemoteEvent", 30) end
 local RESPAWN_WARP = Vector3.new(999999, 9999999, 999999)
 
@@ -235,6 +235,86 @@ local FarmRunning = false
 local StopRequest = false
 local FarmThread = nil
 local StartTime = os.time()
+
+_G.FarmSettingsRef = FarmSettings
+_G.FarmStateRef = FarmState
+_G.FarmRunningRef = { value = false }
+
+-- ============================================================
+-- DISPLAY NAME — FAHRIL
+-- ============================================================
+local RGBEnabled = true
+local CurrentDisplayName = "FAHRIL"
+local RGBLoop = nil
+
+local function GenerateRGB()
+    local colors = {
+        Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0),
+        Color3.fromRGB(0, 0, 255), Color3.fromRGB(255, 255, 0),
+        Color3.fromRGB(255, 0, 255), Color3.fromRGB(0, 255, 255),
+        Color3.fromRGB(255, 165, 0), Color3.fromRGB(255, 20, 147),
+        Color3.fromRGB(0, 255, 127), Color3.fromRGB(138, 43, 226),
+        Color3.fromRGB(255, 215, 0), Color3.fromRGB(0, 191, 255),
+        Color3.fromRGB(255, 105, 180), Color3.fromRGB(50, 205, 50),
+        Color3.fromRGB(255, 140, 0), Color3.fromRGB(147, 112, 219),
+        Color3.fromRGB(0, 250, 154), Color3.fromRGB(255, 69, 0),
+        Color3.fromRGB(218, 112, 214), Color3.fromRGB(0, 206, 209),
+    }
+    return colors[math.random(1, #colors)]
+end
+
+local function SetDisplayName(name, color)
+    pcall(function()
+        local char = workspace.Characters:FindFirstChild(Player.Name)
+        if char and char.Head then
+            local nameTag = char.Head:FindFirstChild("NameTag")
+            if nameTag and nameTag:FindFirstChild("MainFrame") then
+                local nameLabel = nameTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
+                end
+            end
+            local rankTag = char.Head:FindFirstChild("RankTag")
+            if rankTag and rankTag:FindFirstChild("MainFrame") then
+                local nameLabel = rankTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
+                end
+            end
+            for _, child in pairs(char.Head:GetDescendants()) do
+                if child:IsA("TextLabel") and child.Name:find("Name") then
+                    if name then child.Text = name end
+                    if color then child.TextColor3 = color end
+                end
+            end
+        end
+    end)
+end
+
+local function ApplyName()
+    if RGBEnabled then SetDisplayName(CurrentDisplayName, GenerateRGB())
+    else SetDisplayName(CurrentDisplayName, Color3.fromRGB(255, 255, 255)) end
+end
+
+local function StartRGBName()
+    if RGBLoop then return end
+    RGBEnabled = true
+    ApplyName()
+    RGBLoop = task.spawn(function()
+        while RGBEnabled do
+            task.wait(0.3)
+            if RGBEnabled then SetDisplayName(nil, GenerateRGB()) end
+        end
+    end)
+end
+
+local function StopRGBName()
+    RGBEnabled = false
+    if RGBLoop then task.cancel(RGBLoop); RGBLoop = nil end
+    SetDisplayName(nil, Color3.fromRGB(255, 255, 255))
+end
 
 local function GetCurrentCash()
     local totalCash = 0
@@ -363,6 +443,7 @@ local function doSuicideTP(loc)
     for _ = 1, 4 do hrp.CFrame = targetCF; task.wait(0.15) end
     tpBusy = false
     task.wait(0.2)
+    ApplyName()
 end
 
 local function GetAprtBoardText(board)
@@ -480,7 +561,9 @@ local function findLamont()
     return nil
 end
 
--- NoClip FIXED
+-- ============================================================
+-- 🚪 NOCLIP FIXED
+-- ============================================================
 local NoClipEnabled = false
 local NoClipConnection = nil
 local NoClipCharConn = nil
@@ -750,6 +833,7 @@ end
 local function StartFullyFarm()
     if FarmRunning then return end
     FarmRunning = true
+    _G.FarmRunningRef.value = true
     StopRequest = false
     CurrentCycle = 0
     isFirstCycle = true
@@ -758,20 +842,25 @@ local function StartFullyFarm()
     FarmState.MarshmallowsMade = 0
     FarmState.Step = "Starting"
     FarmState.StartTime = os.time()
+    StartRGBName()
     FarmThread = task.spawn(function()
         while FarmRunning and not StopRequest do
             pcall(FullCycle)
             task.wait(1)
         end
         FarmRunning = false
+        _G.FarmRunningRef.value = false
         FarmState.Step = "Idle"
+        StopRGBName()
     end)
 end
 
 local function StopFullyFarm()
     StopRequest = true
     FarmRunning = false
+    _G.FarmRunningRef.value = false
     FarmState.Step = "Idle"
+    StopRGBName()
     if FarmThread then task.cancel(FarmThread); FarmThread = nil end
 end
 
@@ -780,6 +869,9 @@ _G.StopFullyFarm = StopFullyFarm
 _G.EnableNoClip = EnableNoClipPermanent
 _G.DisableNoClip = DisableNoClipPermanent
 
+-- ============================================================
+-- 🔄 AUTO REJOIN
+-- ============================================================
 local AutoRejoinConfig = {
     Enabled = true,
     ScriptUrl = "https://raw.githubusercontent.com/izann-hub/Fully-fahril/refs/heads/main/Fully%20fahril",
@@ -842,11 +934,11 @@ print("✅ [LOADER] Bagian farm selesai tanpa crash")
 end) -- END pcall FarmLogicOK
 
 if not FarmLogicOK then
-    warn("⚠️ [LOADER] Bagian farm error, tapi UI tetap akan dibuat")
+    warn("⚠️ [LOADER] Bagian farm error, tapi UI tetap dibuat:", FarmLogicErr)
 end
 
 -- ============================================================
--- 🎨 CREATE UI — SELALU DIBUAT (di luar pcall)
+-- 🎨 CREATE UI — SELALU DIBUAT
 -- ============================================================
 print("🎨 [LOADER] Membuat UI...")
 
@@ -875,8 +967,9 @@ ScreenGui.Name = "MTS_MASYARIKUL_ANWAR_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 999
 
--- Parent fallback: gethui → CoreGui → PlayerGui
+-- Parent fallback
 local parentOk = false
 if gethui then
     parentOk = pcall(function() ScreenGui.Parent = gethui() end)
@@ -1072,7 +1165,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Buy slider
+-- Slider
 local SliderFrame = Instance.new("Frame")
 SliderFrame.Size = UDim2.new(1, -24, 0, 62)
 SliderFrame.Position = UDim2.new(0, 12, 0, 68)
@@ -1151,7 +1244,6 @@ local function updateSlider(val)
     SliderLabel.Text = "Buy Amount: " .. val
     Textbox.Text = tostring(val)
 end
-_G.UpdateBuySlider = updateSlider
 
 SliderTrack.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1174,10 +1266,10 @@ end)
 Textbox.FocusLost:Connect(function()
     local num = tonumber(Textbox.Text)
     if num and num >= 1 and num <= 50 then updateSlider(num)
-    else Textbox.Text = SliderLabel.Text:match("%d+") or "8" end
+    else Textbox.Text = tostring(_G.FarmSettingsRef and _G.FarmSettingsRef.Amount or 8) end
 end)
 
--- Stats panel
+-- Stats
 local StatsSection = Instance.new("Frame")
 StatsSection.Size = UDim2.new(0.5, -14, 1, -20)
 StatsSection.Position = UDim2.new(0.5, 4, 0, 10)
@@ -1309,7 +1401,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Keybind F3
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.KeyCode == Enum.KeyCode.F3 then
@@ -1317,6 +1408,9 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Force visible
 ScreenGui.Enabled = true
 MainFrame.Visible = true
+
+print("========================================")
+print("🎀 MTS MASYARIKUL ANWAR UI — LOADED")
+print("========================================")
