@@ -1,21 +1,17 @@
 -- ============================================================
--- 🚀 FULLY MS V1 — MTS MASYARIKUL ANWAR EDITION (FINAL)
+-- 🚀 FULLY MS V1 — MTS MASYARIKUL ANWAR EDITION (LENGKAP)
 -- Display: FAHRIL
 -- Background: rbxassetid://86196334070679
 -- NoClip: FIXED · Tween: 24 · WalkSpeed: 21
+-- Fitur: X-Ray · Anti-Kick · Auto Rejoin · Hyphon · Farm Loop
 -- Script URL: https://raw.githubusercontent.com/izann-hub/Fully-fahril/refs/heads/main/Fully%20fahril
 -- ============================================================
 
 print("🚀 [LOADER] Script mulai...")
 
 -- ============================================================
--- 🔥 FARM LOGIC (DIBUNGKUS pcall — kalau error, UI tetap dibuat)
+-- 🔥 AUTO CLICK PLAY
 -- ============================================================
-local FarmLogicOK, FarmLogicErr = pcall(function()
-
-print("🔧 [LOADER] Farm logic dimulai...")
-
--- AUTO CLICK PLAY
 local function ClickPlay()
     local Players = game:GetService("Players")
     local LP = Players.LocalPlayer
@@ -55,44 +51,53 @@ for i = 1, 5 do
     task.wait(1)
 end
 
--- HYPHON EMULATOR
-pcall(function()
-    if not filtergc then
-        filtergc = function(ftype, filters, returnSingle)
-            local results = {}
-            for _, obj in pairs(getgc(true)) do
-                if type(obj) == "function" then
-                    local ok, info = pcall(debug.getinfo, obj)
-                    if ok and info then
-                        local match = true
-                        if filters.StartLine and info.linedefined ~= filters.StartLine then match = false end
-                        if match then
-                            if returnSingle then return obj end
-                            table.insert(results, obj)
-                        end
+-- ============================================================
+-- 🔥 HYPHON EMULATOR
+-- ============================================================
+if not filtergc then
+    filtergc = function(ftype, filters, returnSingle)
+        local results = {}
+        for _, obj in pairs(getgc(true)) do
+            if type(obj) == "function" then
+                local ok, info = pcall(debug.getinfo, obj)
+                if ok and info then
+                    local match = true
+                    if filters.StartLine and info.linedefined ~= filters.StartLine then match = false end
+                    if filters.Source and info.source ~= filters.Source then match = false end
+                    if match then
+                        if returnSingle then return obj end
+                        table.insert(results, obj)
                     end
                 end
             end
-            if returnSingle then return nil end
-            return results
         end
+        if returnSingle then return nil end
+        return results
     end
-    if not getnilinstances then getnilinstances = function() return {} end end
-    if not bit32 then bit32 = {} end
-    if not bit32.bxor then
-        bit32.bxor = function(a, b)
-            local r, bit = 0, 1
-            while a > 0 or b > 0 do
-                if (a % 2) ~= (b % 2) then r = r + bit end
-                a, b, bit = math.floor(a/2), math.floor(b/2), bit*2
-            end
-            return r
+end
+
+if not getnilinstances then getnilinstances = function() return {} end end
+if not bit32 then bit32 = {} end
+if not bit32.bxor then
+    bit32.bxor = function(a, b)
+        local result, bit = 0, 1
+        while a > 0 or b > 0 do
+            if (a % 2) ~= (b % 2) then result = result + bit end
+            a, b, bit = math.floor(a/2), math.floor(b/2), bit*2
         end
+        return result
     end
+end
+
+local emOk, emErr = pcall(function()
     local gv = getgenv()
     local function tryFind(name, ln)
         local fn = filtergc("function", { StartLine = ln }, true)
         if type(fn) ~= "function" then fn = (type(fn) == "table" and #fn > 0 and fn[1]) or nil end
+        if not fn then
+            local all = filtergc("function", { StartLine = ln })
+            if type(all) == "table" and #all > 0 then fn = all[1] end
+        end
         if fn then gv[name] = fn end
         return fn
     end
@@ -100,13 +105,51 @@ pcall(function()
     gv.Hyphon_2247 = tryFind("Hyphon_2247", 2247)
     gv.Hyphon_2846 = tryFind("Hyphon_2846", 2846)
     gv.Hyphon_fake_dec = tryFind("Hyphon_fake_dec", 1097)
+    if gv.Hyphon_2102 then
+        gv.Hyphon_Encode = debug.getupvalue(gv.Hyphon_2102, 1)
+        gv.Hyphon_Decode = debug.getupvalue(gv.Hyphon_2102, 21)
+    end
     gv.Hyphon_Script = nil
     pcall(function()
         for _, o in pairs(getnilinstances()) do
             if o:IsA("Script") and o.Name:len() == 32 then gv.Hyphon_Script = o; break end
         end
     end)
+    if gv.Hyphon_2102 and gv.Hyphon_2247 and gv.Hyphon_2846 and gv.Hyphon_fake_dec then
+        pcall(function()
+            local HC = cloneref(game:GetService("MemoryStoreService")):FindFirstChild("Hyphon_Check")
+            local RF = debug.getupvalue(gv.Hyphon_2247, 6)
+            if HC then local o = hookfunction(HC.FireServer, function(s, ...) return o(s, ...) end) end
+            if RF then local o = hookfunction(RF.InvokeServer, function(s, ...)
+                local a = table.pack(...)
+                if type(a[1]) == "table" and a[1][1] then
+                    gv.T1 = a[1][1]; gv.T2 = a[1][2]; gv.T3 = a[1][6]; gv.T4 = a[1][11]
+                end
+                return o(s, ...)
+            end) end
+        end)
+        if bit32 and bit32.bxor and gv.Hyphon_Script and checkcaller and getcallingscript then
+            pcall(function()
+                local o = hookfunction(bit32.bxor, function(a, b)
+                    if not checkcaller() and getcallingscript() == gv.Hyphon_Script then
+                        return task.wait(9e9)
+                    end
+                    return o(a, b)
+                end)
+            end)
+        end
+    end
+    pcall(function()
+        for _, Object in pairs(getgc(true)) do
+            if typeof(Object) == "table" and typeof(rawget(Object, "Homeless")) == "table" then
+                if rawget(Object.Homeless, "MaxDistance") then
+                    Object.Homeless.MaxDistance = 9e9
+                end
+            end
+        end
+    end)
 end)
+
 getgenv().HyphonReady = true
 getgenv().Emulator_Set = true
 
@@ -137,22 +180,27 @@ task.spawn(function()
             checkDestroy(coregui)
             checkDestroy(PG)
         end)
-        task.wait(0.5)
+        task.wait(0.1)
     end
 end)
 
-print("✅ HYPHON BYPASS ACTIVE")
+print("✅ HYPHON EMULATOR BYPASS ACTIVE")
 
--- SERVICES
+-- ============================================================
+-- 📦 SERVICES
+-- ============================================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local LogService = game:GetService("LogService")
 local TeleportService = game:GetService("TeleportService")
 
-local Player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+local Player = LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui", 30)
 if not PlayerGui then error("PlayerGui tidak ditemukan") end
 
@@ -165,6 +213,9 @@ print("📡 RemoteEvent:", RemoteEvent)
 
 local RESPAWN_WARP = Vector3.new(999999, 9999999, 999999)
 
+-- ============================================================
+-- 🏢 APARTMENT DATA
+-- ============================================================
 local APRT_NAMES = {
     "CompactWalkupAPT1","CompactWalkupAPT2","CompactWalkupAPT3",
     "CompactWalkupAPT4","CompactWalkupAPT5","CompactWalkupAPT6",
@@ -178,25 +229,177 @@ local APRT_COORDS = {
     ["CompactWalkupAPT6"] = Vector3.new(1141.049, 10.093, 451.013),
 }
 
+-- ============================================================
+-- ⚙️ STATE
+-- ============================================================
 local FarmSettings = {
-    OffsetY = 5, Amount = 8,
-    ApartmentCost = 500, IngredientCost = 190,
+    OffsetY = 5,
+    Amount = 8,
+    ApartmentCost = 500,
+    IngredientCost = 190,
 }
 local FarmState = {
     Cycles = 0, Status = "Idle", Sold = 0, MarshmallowsMade = 0,
     OwnedAprt = nil, TotalIncome = 0, TotalExpense = 0,
     PreviousCash = 0, CurrentCash = 0, CashInitialized = false,
     BatchProgress = "0/0", CurrentBatch = 0, Step = "Idle",
+    Runtime = 0, StartTime = os.time(), Profit = 0,
 }
 local FarmRunning = false
 local StopRequest = false
 local FarmThread = nil
+local StartTime = os.time()
 
 _G.FarmSettingsRef = FarmSettings
 _G.FarmStateRef = FarmState
 _G.FarmRunningRef = { value = false }
 
--- DISPLAY NAME — FAHRIL
+-- ============================================================
+-- 🎨 X-RAY SYSTEM
+-- ============================================================
+local CONFIG = {
+    Enabled = true,
+    MaxDistance = 10,
+    Transparency = 0.95,
+}
+
+local function GetCleanedObjects()
+    local objects = {}
+    local map = Workspace:FindFirstChild("Map")
+    if not map then return objects end
+    local apartments = map:FindFirstChild("Apartments")
+    if not apartments then return objects end
+    for _, apt in pairs(apartments:GetChildren()) do
+        if apt:IsA("Model") or apt:IsA("Folder") then
+            local interior = apt:FindFirstChild("Interior") or apt
+            interior = apt:FindFirstChild("floor") or apt
+            for _, obj in pairs(interior:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    if obj.Name == "Cooking Pot" then continue end
+                    local parent = obj.Parent
+                    local isBoard = false
+                    while parent do
+                        if parent.Name == "Board" then isBoard = true; break end
+                        parent = parent.Parent
+                    end
+                    if isBoard then continue end
+                    local parent2 = obj.Parent
+                    local isPlayer = false
+                    while parent2 do
+                        if parent2:IsA("Model") and parent2:FindFirstChild("Humanoid") then
+                            isPlayer = true
+                            break
+                        end
+                        parent2 = parent2.Parent
+                    end
+                    if isPlayer then continue end
+                    table.insert(objects, obj)
+                end
+            end
+        end
+    end
+    return objects
+end
+
+local objectCache = {}
+local transparencyCache = {}
+local allObjects = {}
+local cacheValid = false
+local objectCount = 0
+
+local function UpdateObjectCache()
+    allObjects = GetCleanedObjects()
+    cacheValid = true
+    objectCount = #allObjects
+    for _, obj in pairs(allObjects) do
+        if not transparencyCache[obj] then
+            pcall(function() transparencyCache[obj] = obj.Transparency or 0 end)
+        end
+    end
+end
+
+local updateCounter = 0
+local Camera = workspace.CurrentCamera
+
+local function UpdateXRay()
+    if not CONFIG.Enabled then
+        for obj, trans in pairs(transparencyCache) do
+            pcall(function()
+                if obj and obj.Parent then obj.Transparency = trans end
+            end)
+        end
+        return
+    end
+    if not cacheValid then UpdateObjectCache(); return end
+    if not Camera then return end
+    local cameraPos = Camera.CFrame.Position
+    local maxDist = CONFIG.MaxDistance
+    local targetTrans = CONFIG.Transparency
+    for _, obj in pairs(allObjects) do
+        if not obj or not obj.Parent then
+            transparencyCache[obj] = nil
+        else
+            local dist = (obj.Position - cameraPos).Magnitude
+            local originalTrans = transparencyCache[obj] or 0
+            local newTrans = originalTrans
+            if dist < maxDist then
+                local factor = 1 - (dist / maxDist)
+                newTrans = math.min(originalTrans + (targetTrans * factor), 1)
+            end
+            pcall(function()
+                if obj.Transparency ~= newTrans then obj.Transparency = newTrans end
+            end)
+        end
+    end
+end
+
+local xrayConnection = nil
+local function StartXRay()
+    if xrayConnection then return end
+    CONFIG.Enabled = true
+    cacheValid = false
+    UpdateObjectCache()
+    xrayConnection = RunService.Heartbeat:Connect(function()
+        updateCounter = updateCounter + 1
+        if updateCounter >= 2 then
+            updateCounter = 0
+            pcall(UpdateXRay)
+        end
+    end)
+end
+
+local function StopXRay()
+    CONFIG.Enabled = false
+    if xrayConnection then xrayConnection:Disconnect(); xrayConnection = nil end
+    for obj, trans in pairs(transparencyCache) do
+        pcall(function()
+            if obj and obj.Parent then obj.Transparency = trans end
+        end)
+    end
+    print("🔮 X-Ray: OFF")
+end
+
+local function RefreshCache()
+    cacheValid = false
+end
+
+local function SetupAutoRefresh()
+    local map = Workspace:FindFirstChild("Map")
+    if map then
+        local apartments = map:FindFirstChild("Apartments")
+        if apartments then
+            apartments.ChildAdded:Connect(function() task.wait(0.5); RefreshCache() end)
+            apartments.ChildRemoved:Connect(function() task.wait(0.5); RefreshCache() end)
+        end
+    end
+end
+
+SetupAutoRefresh()
+StartXRay()
+
+-- ============================================================
+-- 🎭 DISPLAY NAME — FAHRIL
+-- ============================================================
 local RGBEnabled = true
 local CurrentDisplayName = "FAHRIL"
 local RGBLoop = nil
@@ -210,20 +413,31 @@ local function GenerateRGB()
         Color3.fromRGB(0,255,127), Color3.fromRGB(138,43,226),
         Color3.fromRGB(255,215,0), Color3.fromRGB(0,191,255),
         Color3.fromRGB(255,105,180), Color3.fromRGB(50,205,50),
+        Color3.fromRGB(255,140,0), Color3.fromRGB(147,112,219),
+        Color3.fromRGB(0,250,154), Color3.fromRGB(255,69,0),
+        Color3.fromRGB(218,112,214), Color3.fromRGB(0,206,209),
     }
-    return colors[math.random(1,#colors)]
+    return colors[math.random(1, #colors)]
 end
 
 local function SetDisplayName(name, color)
     pcall(function()
         local char = workspace.Characters:FindFirstChild(Player.Name)
         if char and char.Head then
-            local nt = char.Head:FindFirstChild("NameTag")
-            if nt and nt:FindFirstChild("MainFrame") then
-                local nl = nt.MainFrame:FindFirstChild("NameLabel")
-                if nl then
-                    if name then nl.Text = name end
-                    if color then nl.TextColor3 = color end
+            local nameTag = char.Head:FindFirstChild("NameTag")
+            if nameTag and nameTag:FindFirstChild("MainFrame") then
+                local nameLabel = nameTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
+                end
+            end
+            local rankTag = char.Head:FindFirstChild("RankTag")
+            if rankTag and rankTag:FindFirstChild("MainFrame") then
+                local nameLabel = rankTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
                 end
             end
             for _, child in pairs(char.Head:GetDescendants()) do
@@ -259,19 +473,48 @@ local function StopRGBName()
     SetDisplayName(nil, Color3.fromRGB(255,255,255))
 end
 
--- CASH
+-- ============================================================
+-- 💰 CASH DETECTION
+-- ============================================================
 local function GetCurrentCash()
     local total = 0
     local ls = Player:FindFirstChild("leaderstats")
     if ls then
-        for _, s in pairs(ls:GetChildren()) do
-            if s:IsA("NumberValue") or s:IsA("IntValue") or s:IsA("StringValue") then
+        for _, stat in pairs(ls:GetChildren()) do
+            if stat:IsA("NumberValue") or stat:IsA("IntValue") or stat:IsA("StringValue") then
                 pcall(function()
-                    local v = s.Value
-                    if type(v) == "number" then total = total + v
-                    elseif type(v) == "string" then
-                        local n = tonumber(v)
-                        if n then total = total + n end
+                    local val = stat.Value
+                    if type(val) == "number" then total = total + val
+                    elseif type(val) == "string" then
+                        local num = tonumber(val)
+                        if num then total = total + num end
+                    end
+                end)
+            end
+        end
+    end
+    for _, child in pairs(Player:GetChildren()) do
+        if child:IsA("NumberValue") or child:IsA("IntValue") or child:IsA("StringValue") then
+            pcall(function()
+                local val = child.Value
+                if type(val) == "number" then total = total + val
+                elseif type(val) == "string" then
+                    local num = tonumber(val)
+                    if num then total = total + num end
+                end
+            end)
+        end
+    end
+    local stats = Player:FindFirstChild("Stats")
+    if stats then
+        for _, child in pairs(stats:GetChildren()) do
+            if child:IsA("NumberValue") or child:IsA("IntValue") or child:IsA("StringValue") then
+                pcall(function()
+                    local val = child.Value
+                    if type(val) == "number" then total = total + val
+                    elseif type(val) == "string" then
+                        local num = tonumber(val)
+                        if num then total = total + num end
                     end
                 end)
             end
@@ -281,22 +524,25 @@ local function GetCurrentCash()
 end
 
 local function UpdateCashTracker()
-    local c = GetCurrentCash()
-    if not FarmState.CashInitialized and c > 0 then
+    local current = GetCurrentCash()
+    if not FarmState.CashInitialized and current > 0 then
         FarmState.CashInitialized = true
-        FarmState.PreviousCash = c
-        FarmState.CurrentCash = c
+        FarmState.PreviousCash = current
+        FarmState.CurrentCash = current
         return
     end
     if not FarmState.CashInitialized then return end
-    local ch = c - FarmState.PreviousCash
-    if ch > 0 then FarmState.TotalIncome = FarmState.TotalIncome + ch
-    elseif ch < 0 then FarmState.TotalExpense = FarmState.TotalExpense + math.abs(ch) end
-    FarmState.PreviousCash = c
-    FarmState.CurrentCash = c
+    local change = current - FarmState.PreviousCash
+    if change > 0 then FarmState.TotalIncome = FarmState.TotalIncome + change
+    elseif change < 0 then FarmState.TotalExpense = FarmState.TotalExpense + math.abs(change) end
+    FarmState.PreviousCash = current
+    FarmState.CurrentCash = current
+    FarmState.Profit = FarmState.TotalIncome - FarmState.TotalExpense
 end
 
--- TP
+-- ============================================================
+-- 🔥 TELEPORT FUNCTIONS
+-- ============================================================
 local tpActive = false
 local tpCancelled = false
 local tpBusy = false
@@ -308,7 +554,7 @@ local function lerpChar(fromPos, toPos, speed)
     while elapsed < travelT and not tpCancelled do
         local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then break end
-        local t = math.clamp(elapsed/travelT, 0, 1)
+        local t = math.clamp(elapsed / travelT, 0, 1)
         local newPos = fromPos:Lerp(toPos, t)
         local offset = newPos - hrp.Position
         for _, p in pairs(Player.Character:GetDescendants()) do
@@ -336,26 +582,34 @@ local function tpToPos(cx, cy, cz)
     local hrp = ch and ch:FindFirstChild("HumanoidRootPart")
     local hum = ch and ch:FindFirstChildOfClass("Humanoid")
     if not hrp or not hum then tpActive = false; return end
-    local UNDERGROUND_Y = -4
+    local deathConn
+    deathConn = hum.Died:Connect(function()
+        tpCancelled = true
+        if deathConn then deathConn:Disconnect(); deathConn = nil end
+    end)
+    local UNDERGROUND_Y = -4.00
     local UG_SPEED = 7
     local ground = Instance.new("Part")
+    ground.Name = "GroundTemp"
     ground.Size = Vector3.new(99999, 1, 99999)
     ground.CFrame = CFrame.new(cx, UNDERGROUND_Y - 4, cz)
     ground.Anchored = true
     ground.CanCollide = true
     ground.Transparency = 1
     ground.Parent = workspace
-    local cur = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if cur and not tpCancelled then
-        lerpChar(cur.Position, Vector3.new(cur.Position.X, UNDERGROUND_Y, cur.Position.Z), UG_SPEED)
-        cur = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        if cur and not tpCancelled then lerpChar(cur.Position, Vector3.new(cx, UNDERGROUND_Y, cz), UG_SPEED) end
-        cur = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        if cur and not tpCancelled then lerpChar(cur.Position, Vector3.new(cx, cy, cz), UG_SPEED) end
+    local curHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if curHrp and not tpCancelled then
+        local startPos = curHrp.Position
+        lerpChar(startPos, Vector3.new(startPos.X, UNDERGROUND_Y, startPos.Z), UG_SPEED)
+        curHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if curHrp and not tpCancelled then lerpChar(curHrp.Position, Vector3.new(cx, UNDERGROUND_Y, cz), UG_SPEED) end
+        curHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if curHrp and not tpCancelled then lerpChar(curHrp.Position, Vector3.new(cx, cy, cz), UG_SPEED) end
     end
     pcall(function() ground:Destroy() end)
-    local h2 = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
-    if h2 then h2.WalkSpeed = 21 end
+    local hum2 = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+    if hum2 then hum2.WalkSpeed = 21 end
+    if deathConn then deathConn:Disconnect(); deathConn = nil end
     tpActive = false
 end
 
@@ -381,32 +635,46 @@ local function doSuicideTP(loc)
     local hrp = newChar:WaitForChild("HumanoidRootPart", 10)
     if not hrp then tpBusy = false; return end
     task.wait(0.8)
-    local target = CFrame.new(loc.x, loc.y + 3, loc.z)
-    for _ = 1, 4 do hrp.CFrame = target; task.wait(0.15) end
+    local targetCF = CFrame.new(loc.x, loc.y + 3, loc.z)
+    for _ = 1, 4 do hrp.CFrame = targetCF; task.wait(0.15) end
     tpBusy = false
     task.wait(0.2)
     ApplyName()
 end
 
--- APARTMENT
+-- ============================================================
+-- 🏢 APARTMENT FUNCTIONS
+-- ============================================================
 local function GetAprtBoardText(board)
+    local txt = ""
     local namePart = board:FindFirstChild("name")
     if namePart then
         local sg = namePart:FindFirstChild("SurfaceGui")
         local tl = sg and sg:FindFirstChildWhichIsA("TextLabel", true)
-        if tl then return tl.Text end
+        if tl then txt = tl.Text end
     end
-    return ""
+    if txt == "" then
+        local sg = board:FindFirstChild("SurfaceGui")
+        if sg then
+            local occ = sg:FindFirstChild("Occupation")
+            if occ then txt = occ.Text
+            else
+                local tl = sg:FindFirstChildWhichIsA("TextLabel", true)
+                if tl then txt = tl.Text end
+            end
+        end
+    end
+    return txt
 end
 
 local function FindAprt()
     local map = Workspace:FindFirstChild("Map")
-    local af = map and map:FindFirstChild("Apartments")
-    if not af then return nil, nil end
+    local aptFolder = map and map:FindFirstChild("Apartments")
+    if not aptFolder then return nil, nil end
     local owned, vacant = nil, nil
     for _, name in ipairs(APRT_NAMES) do
-        local obj = af:FindFirstChild(name)
-        if not obj then continue end
+        local obj = aptFolder:FindFirstChild(name)
+        if not obj or not (obj:IsA("Model") or obj:IsA("Folder")) then continue end
         local board = obj:FindFirstChild("Board", true)
         if not board then continue end
         local txt = GetAprtBoardText(board)
@@ -420,15 +688,31 @@ local function FindAprt()
     return vacant, "Vacant"
 end
 
+local function getAprtObjByName(name)
+    if not name then return nil end
+    local map = Workspace:FindFirstChild("Map")
+    local folder = map and map:FindFirstChild("Apartments")
+    local obj = folder and folder:FindFirstChild(name)
+    if obj and (obj:IsA("Model") or obj:IsA("Folder")) then return obj end
+    return nil
+end
+
 local function GetOwnedAprtTarget()
-    local name = getgenv().FA_OWNED_APRT
-    if name and APRT_COORDS[name] then
-        return APRT_COORDS[name], { obj = Workspace:FindFirstChild(name, true) }
+    local cachedName = getgenv().FA_OWNED_APRT
+    if cachedName then
+        local coords = APRT_COORDS[cachedName]
+        if coords then
+            local entry = nil
+            local obj = getAprtObjByName(cachedName)
+            if obj then entry = { obj = obj } end
+            return coords, entry
+        end
     end
     local entry, status = FindAprt()
     if entry and status == "Owned" then
         getgenv().FA_OWNED_APRT = entry.obj.Name
-        return APRT_COORDS[entry.obj.Name], entry
+        local coords = APRT_COORDS[entry.obj.Name]
+        if coords then return coords, entry end
     end
     return nil
 end
@@ -441,50 +725,65 @@ local function EnsureBuyAprt()
         getgenv().FA_OWNED_APRT = entry.obj.Name
         return true
     end
-    FarmState.Step = "🏠 Buying Apartment"
+    FarmState.Step = "🏠 Buying Apartment (Cost: $500)"
     local board = entry.board
-    local bb = board:FindFirstChild("backboard")
-    local bp = bb and bb:FindFirstChildWhichIsA("ProximityPrompt", true)
+    local backboard = board:FindFirstChild("backboard")
+    local bp = backboard and backboard:FindFirstChildWhichIsA("ProximityPrompt", true)
     if not bp then bp = board:FindFirstChildWhichIsA("ProximityPrompt", true) end
     if not bp then return false end
     bp.MaxActivationDistance = 9e9
     bp.HoldDuration = 0
     bp.RequiresLineOfSight = false
     doSuicideTP({
-        x = bb and bb.Position.X or board.Position.X,
-        y = bb and bb.Position.Y + 3 or board.Position.Y + 3,
-        z = bb and bb.Position.Z or board.Position.Z,
+        x = backboard and backboard.Position.X or board.Position.X,
+        y = backboard and backboard.Position.Y + 3 or board.Position.Y + 3,
+        z = backboard and backboard.Position.Z or board.Position.Z,
     })
     task.wait(0.5)
-    for i = 1, 8 do
+    for attempt = 1, 8 do
         if StopRequest then return false end
         fireproximityprompt(bp)
         task.wait(1.5)
-        if GetAprtBoardText(board) == Player.Name then
+        local txt = GetAprtBoardText(board)
+        if txt == Player.Name then
             FarmState.OwnedAprt = entry.obj.Name
             getgenv().FA_OWNED_APRT = entry.obj.Name
+            FarmState.TotalExpense = FarmState.TotalExpense + FarmSettings.ApartmentCost
+            task.wait(0.5)
             return true
         end
     end
     return false
 end
 
--- BUY
+-- ============================================================
+-- 🛒 BUY SYSTEM
+-- ============================================================
 local function GetIngredientCount()
-    local w, s, g = 0, 0, 0
+    local water, sugar, gelatin = 0, 0, 0
     if Player.Backpack then
         for _, v in pairs(Player.Backpack:GetChildren()) do
-            if v.Name == "Water" then w = w + 1 end
-            if v.Name == "Sugar Block Bag" then s = s + 1 end
-            if v.Name == "Gelatin" then g = g + 1 end
+            if v.Name == "Water" then water = water + 1 end
+            if v.Name == "Sugar Block Bag" then sugar = sugar + 1 end
+            if v.Name == "Gelatin" then gelatin = gelatin + 1 end
         end
     end
-    return w, s, g
+    return water, sugar, gelatin
+end
+
+local function BuyWater()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\003")) end)
+end
+local function BuySugar()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\002")) end)
+end
+local function BuyGelatin()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\001")) end)
 end
 
 local function BuyAll(amount)
     amount = amount or FarmSettings.Amount
-    FarmState.Step = "🛒 Buying Ingredients"
+    FarmState.Step = "🛒 Buying Ingredients (Cost: $" .. (amount * FarmSettings.IngredientCost) .. ")"
     if not RemoteEvent then
         print("❌ [BUY] RemoteEvent nil")
         return false
@@ -492,25 +791,39 @@ local function BuyAll(amount)
     for i = 1, amount do
         if StopRequest then return false end
         local w, s, g = GetIngredientCount()
-        if w < i then pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\003")) end); task.wait(0.45) end
-        if s < i then pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\002")) end); task.wait(0.45) end
-        if g < i then pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\001")) end); task.wait(0.45) end
+        if w < i then BuyWater(); task.wait(0.45) end
+        if s < i then BuySugar(); task.wait(0.45) end
+        if g < i then BuyGelatin(); task.wait(0.45) end
     end
-    local fW, fS, fG = GetIngredientCount()
-    print("📦 [BUY] Water:", fW, "Sugar:", fS, "Gelatin:", fG, "/ Target:", amount)
-    return fW >= amount and fS >= amount and fG >= amount
+    local finalW, finalS, finalG = GetIngredientCount()
+    print("📦 [BUY] Water:", finalW, "Sugar:", finalS, "Gelatin:", finalG, "/ Target:", amount)
+    if finalW >= amount and finalS >= amount and finalG >= amount then
+        FarmState.TotalExpense = FarmState.TotalExpense + (amount * FarmSettings.IngredientCost)
+        return true
+    else
+        print("⚠️ [BUY] Failed! Retrying...")
+        return false
+    end
 end
 
+-- ============================================================
+-- 🔍 FIND LAMONT
+-- ============================================================
 local function findLamont()
     if workspace.Folders and workspace.Folders.NPCs then
         for _, v in pairs(workspace.Folders.NPCs:GetChildren()) do
             if v.Name == "Lamont Bell" then return v end
         end
     end
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == "Lamont Bell" and v:IsA("Model") then return v end
+    end
     return nil
 end
 
--- NOCLIP FIXED
+-- ============================================================
+-- 🚪 NOCLIP FIXED
+-- ============================================================
 local NoClipEnabled = false
 local NoClipConnection = nil
 local NoClipCharConn = nil
@@ -519,13 +832,15 @@ local NoClipDescConn = nil
 local function ApplyNoClipToCharacter(char)
     if not char then return end
     for _, part in pairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then pcall(function() part.CanCollide = false end) end
+        if part:IsA("BasePart") then
+            pcall(function() part.CanCollide = false end)
+        end
     end
     if NoClipDescConn then NoClipDescConn:Disconnect() end
-    NoClipDescConn = char.DescendantAdded:Connect(function(d)
-        if NoClipEnabled and d:IsA("BasePart") then
+    NoClipDescConn = char.DescendantAdded:Connect(function(desc)
+        if NoClipEnabled and desc:IsA("BasePart") then
             task.wait(0.05)
-            pcall(function() d.CanCollide = false end)
+            pcall(function() desc.CanCollide = false end)
         end
     end)
 end
@@ -559,21 +874,39 @@ local function DisableNoClipPermanent()
     if NoClipConnection then NoClipConnection:Disconnect(); NoClipConnection = nil end
     if NoClipCharConn then NoClipCharConn:Disconnect(); NoClipCharConn = nil end
     if NoClipDescConn then NoClipDescConn:Disconnect(); NoClipDescConn = nil end
+    pcall(function()
+        local char = Player.Character
+        if char then
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    pcall(function() part.CanCollide = true end)
+                end
+            end
+        end
+    end)
 end
 
+-- ============================================================
+-- 🍳 QUICK TELEPORT TO POT + FLY LOCK
+-- ============================================================
 local function QuickTeleportToPot(Pot)
     local char = Player.Character
     if not char then return false end
     local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hrp or not hum then return false end
+    if not hum then return false end
     local cookPos = Pot.CFrame - Vector3.new(0, FarmSettings.OffsetY, 0)
     hrp.CFrame = cookPos
     hrp.AssemblyLinearVelocity = Vector3.zero
     hrp.AssemblyAngularVelocity = Vector3.zero
     for _, part in pairs(char:GetDescendants()) do
         if part:IsA("BasePart") and part ~= hrp then
-            pcall(function() part.CFrame = cookPos end)
+            pcall(function()
+                part.CFrame = cookPos
+                part.AssemblyLinearVelocity = Vector3.zero
+                part.AssemblyAngularVelocity = Vector3.zero
+            end)
         end
     end
     hum.PlatformStand = true
@@ -585,14 +918,14 @@ local function QuickTeleportToPot(Pot)
     local bp = Instance.new("BodyPosition")
     bp.Name = "FlyLock"
     bp.Parent = hrp
-    bp.MaxForce = Vector3.new(4000,4000,4000)
+    bp.MaxForce = Vector3.new(4000, 4000, 4000)
     bp.P = 2000
     bp.D = 100
     bp.Position = cookPos.Position
     local bg = Instance.new("BodyGyro")
     bg.Name = "FlyLock"
     bg.Parent = hrp
-    bg.MaxTorque = Vector3.new(4000,4000,4000)
+    bg.MaxTorque = Vector3.new(4000, 4000, 4000)
     bg.P = 2000
     bg.D = 100
     bg.CFrame = hrp.CFrame
@@ -612,6 +945,9 @@ local function DisableFlyLock()
     end
 end
 
+-- ============================================================
+-- 🍳 COOK FUNCTIONS
+-- ============================================================
 local function af_FirePrompt(prompt)
     if not prompt or not prompt.Parent then return end
     pcall(function()
@@ -642,51 +978,74 @@ local function af_Tween(cf)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local dist = (hrp.Position - cf.Position).Magnitude
-    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist/24, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
+    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / 24, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
     tw:Play()
     tw.Completed:Wait()
 end
 
--- COOK
+-- ============================================================
+-- 🍳 COOK MARSHMALLOW
+-- ============================================================
 local function CookMarshmallow(amount, skipBuy)
     amount = amount or FarmSettings.Amount
     FarmState.BatchProgress = "0/" .. amount
     FarmState.CurrentBatch = 0
 
     if not skipBuy then
-        FarmState.Step = "🚗 Going to Store"
-        doSuicideTP({ x = 510, y = 4, z = 602 })
-        task.wait(1)
-
+        local char = Player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local isNearStore = false
+        if hrp then
+            local dist = (hrp.Position - Vector3.new(510, 4, 602)).Magnitude
+            if dist < 20 then isNearStore = true end
+        end
+        if not isNearStore then
+            FarmState.Step = "🚗 Going to Store"
+            doSuicideTP({ x = 510, y = 4, z = 602 })
+            task.wait(1)
+        end
         FarmState.Step = "🛒 Buying Ingredients"
-        local ok = false
+        local buySuccess = false
         for retry = 1, 10 do
-            ok = BuyAll(amount)
-            if ok then break end
-            print("⚠️ [BUY] Retry", retry, "/10")
+            buySuccess = BuyAll(amount)
+            if buySuccess then break end
+            print("⚠️ [BUY] Retry " .. retry .. "/10...")
             task.wait(2)
             doSuicideTP({ x = 510, y = 4, z = 602 })
             task.wait(1)
         end
-        if not ok then
-            print("⚠️ [COOK] Buy failed, skip cycle")
+        if not buySuccess then
+            print("⚠️ [COOK] Skip cycle, waiting...")
             task.wait(5)
             return true
         end
+        task.wait(0.5)
     end
 
     FarmState.Step = "🚗 Going to Apartment"
     local targetPos, entry = GetOwnedAprtTarget()
     if not targetPos then
-        print("⚠️ [COOK] No apartment")
+        print("⚠️ [COOK] No apartment found, skipping...")
         return true
     end
     af_TP(CFrame.new(targetPos.X, targetPos.Y + 3, targetPos.Z))
     task.wait(1)
 
     local House = entry and entry.obj
-    if not House then return true end
+    if not House then
+        local _, newEntry = GetOwnedAprtTarget()
+        House = newEntry and newEntry.obj
+    end
+    if not House then
+        print("⚠️ [COOK] House not found, skipping...")
+        return true
+    end
+
     local Interior = House:FindFirstChild("Interior") or House
+    for _, v in pairs(Interior:GetChildren()) do
+        if v.Name == "Floor" then pcall(function() v.CanCollide = false end) end
+    end
+
     local Pot = Interior:FindFirstChild("Cooking Pot", true)
     local PotPrompt = nil
     if Pot then
@@ -694,7 +1053,7 @@ local function CookMarshmallow(amount, skipBuy)
         PotPrompt = att and att:FindFirstChildOfClass("ProximityPrompt") or Pot:FindFirstChildWhichIsA("ProximityPrompt", true)
     end
     if not Pot or not PotPrompt then
-        print("⚠️ [COOK] Pot not found")
+        print("⚠️ [COOK] Pot not found, skipping...")
         return true
     end
 
@@ -706,53 +1065,63 @@ local function CookMarshmallow(amount, skipBuy)
         FarmState.CurrentBatch = i
         FarmState.BatchProgress = i .. "/" .. amount
 
-        FarmState.Step = "💧 Water " .. i
+        FarmState.Step = "💧 Pouring Water (" .. i .. "/" .. amount .. ")"
         if not Player.Character:FindFirstChild("Water") then af_Equip("Water") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
-        local t = 0
-        while t < 21 do
+
+        FarmState.Step = "⏳ Waiting Water (" .. i .. "/" .. amount .. ")"
+        local timeout = 0
+        while timeout < 21 do
             if StopRequest then return false end
             local timer = Pot:FindFirstChild("Timer")
             if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
-            task.wait(0.5); t = t + 0.5
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
 
-        FarmState.Step = "🧂 Sugar " .. i
+        FarmState.Step = "🧂 Adding Sugar (" .. i .. "/" .. amount .. ")"
         if not Player.Character:FindFirstChild("Sugar Block Bag") then af_Equip("Sugar Block Bag") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
         af_Unequip()
-        t = 0
-        while t < 1 do
+
+        FarmState.Step = "⏳ Waiting Sugar (" .. i .. "/" .. amount .. ")"
+        timeout = 0
+        while timeout < 1 do
             if StopRequest then return false end
             local timer = Pot:FindFirstChild("Timer")
             if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
-            task.wait(0.5); t = t + 0.5
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
 
-        FarmState.Step = "🧪 Gelatin " .. i
+        FarmState.Step = "🧪 Adding Gelatin (" .. i .. "/" .. amount .. ")"
         af_Unequip()
         task.wait(1)
         if not Player.Character:FindFirstChild("Gelatin") then af_Equip("Gelatin") end
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
-        t = 0
-        while t < 46 do
+
+        FarmState.Step = "⏳ Waiting Gelatin (" .. i .. "/" .. amount .. ")"
+        timeout = 0
+        while timeout < 46 do
             if StopRequest then return false end
             local timer = Pot:FindFirstChild("Timer")
             if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
-            task.wait(0.5); t = t + 0.5
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
 
-        FarmState.Step = "🥍 Collect " .. i
+        FarmState.Step = "🥍 Collecting Marshmallow (" .. i .. "/" .. amount .. ")"
         if not Player.Character:FindFirstChild("Empty Bag") then af_Equip("Empty Bag") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
         task.wait(1)
         af_Unequip()
+
         FarmState.MarshmallowsMade = FarmState.MarshmallowsMade + 1
         UpdateCashTracker()
     end
@@ -761,60 +1130,82 @@ local function CookMarshmallow(amount, skipBuy)
     return true
 end
 
--- SELL
+-- ============================================================
+-- 💰 SELL MARSHMALLOW
+-- ============================================================
 local function SellMarshmallow()
-    FarmState.Step = "💰 Selling"
+    FarmState.Step = "💰 Selling Marshmallows"
     af_TP(CFrame.new(510, 4, 602))
+    local timeout = 0
+    while not findLamont() and timeout < 10 do
+        task.wait(0.5)
+        timeout = timeout + 0.5
+    end
     task.wait(1)
     af_Tween(CFrame.new(511, 4, 598))
     local lamont = findLamont()
     local sellP = lamont and lamont:FindFirstChild("UpperTorso") and lamont.UpperTorso:FindFirstChildOfClass("ProximityPrompt")
+    local sold = 0
     if Player.Backpack and sellP then
         for _, v in pairs(Player.Backpack:GetChildren()) do
             if StopRequest then break end
             if v:IsA("Tool") and v.Name:find("Marshmallow") then
-                local hum = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
-                if hum then pcall(function() hum:EquipTool(v) end) end
+                local hum2 = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+                if hum2 then pcall(function() hum2:EquipTool(v) end) end
                 af_FirePrompt(sellP)
+                sold = sold + 1
                 FarmState.Sold = FarmState.Sold + 1
                 task.wait(0.25)
             end
         end
     end
     UpdateCashTracker()
+    return sold > 0
 end
 
--- FULL CYCLE
+-- ============================================================
+-- 🔄 FULL CYCLE
+-- ============================================================
 local CurrentCycle = 0
 local isFirstCycle = true
 
 local function FullCycle()
     FarmState.BatchProgress = "0/" .. FarmSettings.Amount
+    FarmState.CurrentBatch = 0
+
     if isFirstCycle then
-        print("🏠 [CYCLE] First cycle — buy apartment")
+        FarmState.Step = "🏠 Buying Apartment (Cost: $500)"
         if not EnsureBuyAprt() then
-            print("⚠️ [CYCLE] Buy apartment failed")
+            print("⚠️ [CYCLE] Failed to buy apartment, retrying...")
             task.wait(5)
-            return
+            return true
         end
         task.wait(1)
+        FarmState.Step = "🔒 Locking Door"
+        task.wait(0.5)
         isFirstCycle = false
     end
-    local ok = CookMarshmallow(FarmSettings.Amount, false)
-    if not ok then
-        print("⚠️ [CYCLE] Cook failed")
+
+    local cookSuccess = CookMarshmallow(FarmSettings.Amount, false)
+    if not cookSuccess then
+        print("⚠️ [CYCLE] Cook failed, skipping...")
         task.wait(5)
-        return
+        return true
     end
+
     DisableFlyLock()
     SellMarshmallow()
     task.wait(0.5)
+
     CurrentCycle = CurrentCycle + 1
     FarmState.Cycles = CurrentCycle
-    print("✅ [CYCLE]", CurrentCycle, "done")
+    UpdateCashTracker()
+    return true
 end
 
--- START / STOP
+-- ============================================================
+-- 🚀 START / STOP
+-- ============================================================
 local function StartFullyFarm()
     print("🟢 [FARM] StartFullyFarm dipanggil")
     if FarmRunning then
@@ -829,7 +1220,16 @@ local function StartFullyFarm()
     FarmState.Cycles = 0
     FarmState.Sold = 0
     FarmState.MarshmallowsMade = 0
+    FarmState.BatchProgress = "0/" .. FarmSettings.Amount
+    FarmState.CurrentBatch = 0
+    FarmState.CashInitialized = false
+    FarmState.CurrentCash = 0
+    FarmState.PreviousCash = 0
+    FarmState.TotalIncome = 0
+    FarmState.TotalExpense = 0
     FarmState.Step = "Starting"
+    FarmState.StartTime = os.time()
+    StartTime = os.time()
     StartRGBName()
     FarmThread = task.spawn(function()
         print("🟢 [FARM] Thread mulai")
@@ -841,6 +1241,7 @@ local function StartFullyFarm()
         print("🔴 [FARM] Thread berhenti")
         FarmRunning = false
         _G.FarmRunningRef.value = false
+        FarmState.Status = "Stopped"
         FarmState.Step = "Idle"
         StopRGBName()
     end)
@@ -851,6 +1252,7 @@ local function StopFullyFarm()
     StopRequest = true
     FarmRunning = false
     _G.FarmRunningRef.value = false
+    FarmState.Status = "Stopped"
     FarmState.Step = "Idle"
     StopRGBName()
     if FarmThread then task.cancel(FarmThread); FarmThread = nil end
@@ -860,8 +1262,12 @@ _G.StartFullyFarm = StartFullyFarm
 _G.StopFullyFarm = StopFullyFarm
 _G.EnableNoClip = EnableNoClipPermanent
 _G.DisableNoClip = DisableNoClipPermanent
+_G.StartXRay = StartXRay
+_G.StopXRay = StopXRay
 
--- AUTO REJOIN
+-- ============================================================
+-- 🔄 AUTO REJOIN
+-- ============================================================
 local AutoRejoinConfig = {
     Enabled = true,
     ScriptUrl = "https://raw.githubusercontent.com/izann-hub/Fully-fahril/refs/heads/main/Fully%20fahril",
@@ -873,7 +1279,8 @@ _G.MarkDeathTeleport = function() IsDeathTeleport = true end
 local function DoRejoin()
     if not AutoRejoinConfig.Enabled then return end
     if IsDeathTeleport then IsDeathTeleport = false; return end
-    print("🔄 [REJOIN]")
+    print("🔄 [REJOIN] Rejoining...")
+    FarmState.Step = "Rejoining"
     FarmRunning = false
     getgenv().FULLY_MS_AFTER_REJOIN = true
     pcall(function()
@@ -888,7 +1295,8 @@ task.spawn(function()
     local conn
     conn = LogService.MessageOut:Connect(function(msg, mtype)
         if mtype == Enum.MessageType.MessageError then
-            if msg:find("Kicked") or msg:find("Disconnected") or msg:find("Connection lost") then
+            if msg:find("Kicked") or msg:find("Disconnected") or msg:find("Idle") or
+               msg:find("Removed") or msg:find("Connection lost") or msg:find("Ban") then
                 if conn then conn:Disconnect() end
                 task.spawn(DoRejoin)
             end
@@ -896,22 +1304,52 @@ task.spawn(function()
     end)
 end)
 
+local function SetupDeathDetection()
+    local function OnCharacterAdded(char)
+        local hum = char:WaitForChild("Humanoid", 5)
+        if not hum then return end
+        hum.Died:Connect(function()
+            if IsDeathTeleport then IsDeathTeleport = false; return end
+            print("💀 [REJOIN] Natural death detected!")
+            task.spawn(DoRejoin)
+        end)
+    end
+    local char = Player.Character
+    if char then task.spawn(function() OnCharacterAdded(char) end) end
+    Player.CharacterAdded:Connect(OnCharacterAdded)
+end
+SetupDeathDetection()
+
 -- AUTO REJOIN START
 task.spawn(function()
     task.wait(3)
     if getgenv().FULLY_MS_AFTER_REJOIN then
-        print("🔄 [REJOIN] Auto starting farm")
+        print("🔄 [REJOIN] Auto starting farm...")
         getgenv().FULLY_MS_AFTER_REJOIN = nil
-        for i = 1, 10 do
+        local clickAttempts = 0
+        while clickAttempts < 10 do
             if pcall(ClickPlay) then break end
+            clickAttempts = clickAttempts + 1
             task.wait(2)
         end
         task.wait(2)
         StartFullyFarm()
+    else
+        print("📌 FAHRIL READY - F3 to open UI")
     end
 end)
 
 -- ANTI AFK
+task.spawn(function()
+    while true do
+        pcall(function()
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+        end)
+        task.wait(60)
+    end
+end)
+
 Player.Idled:Connect(function()
     if FarmRunning then
         pcall(function()
@@ -921,24 +1359,12 @@ Player.Idled:Connect(function()
     end
 end)
 
-print("✅ [LOADER] Farm logic selesai")
-end) -- END pcall FarmLogicOK
-
-if not FarmLogicOK then
-    warn("⚠️ [LOADER] Farm error, UI tetap dibuat:", FarmLogicErr)
-end
+print("✅ [LOADER] Farm logic loaded")
 
 -- ============================================================
 -- 🎨 CREATE UI
 -- ============================================================
 print("🎨 [LOADER] Membuat UI...")
-
-local PlayersUI = game:GetService("Players")
-local RunServiceUI = game:GetService("RunService")
-local UserInputServiceUI = game:GetService("UserInputService")
-local CoreGuiUI = game:GetService("CoreGui")
-local TweenServiceUI = game:GetService("TweenService")
-local PlayerGuiUI = PlayersUI.LocalPlayer:WaitForChild("PlayerGui", 30)
 
 local COLOR = {
     BgDark    = Color3.fromRGB(28,28,34),
@@ -962,11 +1388,12 @@ ScreenGui.DisplayOrder = 999
 
 local parentOk = false
 if gethui then parentOk = pcall(function() ScreenGui.Parent = gethui() end) end
-if not parentOk or not ScreenGui.Parent then parentOk = pcall(function() ScreenGui.Parent = CoreGuiUI end) end
-if not parentOk or not ScreenGui.Parent then ScreenGui.Parent = PlayerGuiUI end
+if not parentOk or not ScreenGui.Parent then parentOk = pcall(function() ScreenGui.Parent = CoreGui end) end
+if not parentOk or not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
 print("🎨 [UI] Parent:", ScreenGui.Parent)
 
 local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 380, 0, 260)
 MainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
 MainFrame.BackgroundColor3 = COLOR.BgDark
@@ -1002,7 +1429,7 @@ RGBStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 RGBStroke.Parent = MainFrame
 
 local rgbPhase = 0
-RunServiceUI.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     pcall(function()
         rgbPhase = (rgbPhase + 0.003) % 1
         local seg = rgbPhase * 3
@@ -1136,18 +1563,14 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 5)
 local toggleState = false
 ToggleBtn.MouseButton1Click:Connect(function()
     toggleState = not toggleState
-    TweenServiceUI:Create(ToggleBtn, TweenInfo.new(0.2), {
+    TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {
         BackgroundColor3 = toggleState and COLOR.Green or COLOR.BgCard,
         TextColor3 = toggleState and Color3.fromRGB(20,20,20) or COLOR.GrayLight,
     }):Play()
     ToggleBtn.Text = toggleState and "ON" or "OFF"
     if toggleState then
         print("🟢 [UI] Toggle ON — StartFullyFarm:", _G.StartFullyFarm)
-        if _G.StartFullyFarm then
-            task.spawn(_G.StartFullyFarm)
-        else
-            warn("❌ [UI] StartFullyFarm tidak ada — farm logic error!")
-        end
+        if _G.StartFullyFarm then task.spawn(_G.StartFullyFarm) end
     else
         print("🔴 [UI] Toggle OFF")
         if _G.StopFullyFarm then _G.StopFullyFarm() end
@@ -1241,12 +1664,12 @@ SliderTrack.InputBegan:Connect(function(input)
         updateSlider(1 + relX * 49)
     end
 end)
-UserInputServiceUI.InputEnded:Connect(function(input)
+UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         sliderDragging = false
     end
 end)
-UserInputServiceUI.InputChanged:Connect(function(input)
+UserInputService.InputChanged:Connect(function(input)
     if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local relX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
         updateSlider(1 + relX * 49)
@@ -1380,7 +1803,7 @@ TopBar.InputBegan:Connect(function(input)
         end)
     end
 end)
-UserInputServiceUI.InputChanged:Connect(function(input)
+UserInputService.InputChanged:Connect(function(input)
     if dragData.active and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragData.startMouse
         MainFrame.Position = UDim2.new(
@@ -1390,7 +1813,7 @@ UserInputServiceUI.InputChanged:Connect(function(input)
     end
 end)
 
-UserInputServiceUI.InputBegan:Connect(function(input, processed)
+UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.KeyCode == Enum.KeyCode.F3 then
         ScreenGui.Enabled = not ScreenGui.Enabled
@@ -1403,8 +1826,9 @@ MainFrame.Visible = true
 print("========================================")
 print("🎀 MTS MASYARIKUL ANWAR UI — LOADED")
 print("👤 Display: FAHRIL")
-print("🚪 NoClip: FIXED")
-print("🏃 Tween: 24 · WalkSpeed: 21")
+print("🖼️ Background: rbxassetid://86196334070679")
+print("🚪 NoClip: FIXED · Tween: 24 · WalkSpeed: 21")
+print("🔮 X-Ray: ON · Anti-Kick: ON · Auto Rejoin: ON")
 print("========================================")
 print("📌 F3 = Toggle UI")
 print("========================================")
